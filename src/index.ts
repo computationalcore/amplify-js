@@ -30,6 +30,7 @@ export * from './RNComponents';
 export { default as Credentials } from './Credentials';
 export { default as ServiceWorker } from './ServiceWorker';
 export { default as StorageHelper } from './StorageHelper';
+export * from './types';
 export { default as Platform } from './Platform';
 
 import Platform from './Platform';
