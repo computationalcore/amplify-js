@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.4](https://github.com/aws-amplify/amplify-js/compare/@aws-amplify/core@1.3.3...@aws-amplify/core@1.3.4) (2020-02-04)
+
+
+### Bug Fixes
+
+* **@aws-amplify/core:** AWS.config.systemClockOffset for signing ([d688549](https://github.com/aws-amplify/amplify-js/commit/d6885494c3c8f9683e0fe78b9fc1a182cf28a7ef))
+
+
+
+
+
 ## [1.3.3](https://github.com/aws-amplify/amplify-js/compare/@aws-amplify/core@1.3.2...@aws-amplify/core@1.3.3) (2020-01-11)
 
 **Note:** Version bump only for package @aws-amplify/core
