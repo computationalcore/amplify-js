@@ -21,14 +21,14 @@ const logger = new Logger('Signer'),
 const DEFAULT_ALGORITHM = 'AWS4-HMAC-SHA256';
 const IOT_SERVICE_NAME = 'iotdevicegateway';
 
-const encrypt = function(key, src, encoding?) {
+const encrypt = function (key, src, encoding?) {
 	return crypto.lib
 		.createHmac('sha256', key)
 		.update(src, 'utf8')
 		.digest(encoding);
 };
 
-const hash = function(src) {
+const hash = function (src) {
 	const arg = src || '';
 	return crypto
 		.createHash('sha256')
@@ -40,8 +40,8 @@ const hash = function(src) {
  * @private
  * RFC 3986 compliant version of encodeURIComponent
  */
-const escape_RFC3986 = function(component) {
-	return component.replace(/[!'()*]/g, function(c) {
+const escape_RFC3986 = function (component) {
+	return component.replace(/[!'()*]/g, function (c) {
 		return (
 			'%' +
 			c
@@ -57,7 +57,7 @@ const escape_RFC3986 = function(component) {
  * Create canonical query string
  *
  */
-const canonical_query = function(query) {
+const canonical_query = function (query) {
 	if (!query || query.length === 0) {
 		return '';
 	}
@@ -97,23 +97,23 @@ CanonicalHeadersEntry =
     Lowercase(HeaderName) + ':' + Trimall(HeaderValue) + '\n'
 </pre>
 */
-const canonical_headers = function(headers) {
+const canonical_headers = function (headers) {
 	if (!headers || Object.keys(headers).length === 0) {
 		return '';
 	}
 
 	return (
 		Object.keys(headers)
-			.map(function(key) {
+			.map(function (key) {
 				return {
 					key: key.toLowerCase(),
 					value: headers[key] ? headers[key].trim().replace(/\s+/g, ' ') : '',
 				};
 			})
-			.sort(function(a, b) {
+			.sort(function (a, b) {
 				return a.key < b.key ? -1 : 1;
 			})
-			.map(function(item) {
+			.map(function (item) {
 				return item.key + ':' + item.value;
 			})
 			.join('\n') + '\n'
@@ -124,9 +124,9 @@ const canonical_headers = function(headers) {
  * List of header keys included in the canonical headers.
  * @access private
  */
-const signed_headers = function(headers) {
+const signed_headers = function (headers) {
 	return Object.keys(headers)
-		.map(function(key) {
+		.map(function (key) {
 			return key.toLowerCase();
 		})
 		.sort()
@@ -149,7 +149,7 @@ CanonicalRequest =
     HexEncode(Hash(RequestPayload))
 </pre>
 */
-const canonical_request = function(request) {
+const canonical_request = function (request) {
 	const url_info = url.parse(request.url);
 
 	return [
@@ -162,7 +162,7 @@ const canonical_request = function(request) {
 	].join('\n');
 };
 
-const parse_service_info = function(request) {
+const parse_service_info = function (request) {
 	const url_info = url.parse(request.url),
 		host = url_info.host;
 
@@ -180,7 +180,7 @@ const parse_service_info = function(request) {
 	};
 };
 
-const credential_scope = function(d_str, region, service) {
+const credential_scope = function (d_str, region, service) {
 	return [d_str, region, service, 'aws4_request'].join('/');
 };
 
@@ -198,7 +198,7 @@ StringToSign =
     HashedCanonicalRequest
 </pre>
 */
-const string_to_sign = function(algorithm, canonical_request, dt_str, scope) {
+const string_to_sign = function (algorithm, canonical_request, dt_str, scope) {
 	return [algorithm, dt_str, scope, hash(canonical_request)].join('\n');
 };
 
@@ -216,7 +216,7 @@ kService = HMAC(kRegion, Service)
 kSigning = HMAC(kService, "aws4_request")
 </pre>
 */
-const get_signing_key = function(secret_key, d_str, service_info) {
+const get_signing_key = function (secret_key, d_str, service_info) {
 	logger.debug(service_info);
 	const k = 'AWS4' + secret_key,
 		k_date = encrypt(k, d_str),
@@ -227,7 +227,7 @@ const get_signing_key = function(secret_key, d_str, service_info) {
 	return k_signing;
 };
 
-const get_signature = function(signing_key, str_to_sign) {
+const get_signature = function (signing_key, str_to_sign) {
 	return encrypt(signing_key, str_to_sign, 'hex');
 };
 
@@ -237,7 +237,7 @@ const get_signature = function(signing_key, str_to_sign) {
  * Refer to
  * {@link http://docs.aws.amazon.com/general/latest/gr/sigv4-add-signature-to-request.html|Add the Signing Information}
  */
-const get_authorization_header = function(
+const get_authorization_header = function (
 	algorithm,
 	access_key,
 	scope,
@@ -299,7 +299,7 @@ export default class Signer {
 		request.headers = request.headers || {};
 
 		// datetime string and date string
-		const dt = new Date(),
+		const dt = AWS['util']['date'].getDate(),
 			dt_str = dt.toISOString().replace(/[:\-]|\.\d{3}/g, ''),
 			d_str = dt_str.substr(0, 8);
 
@@ -326,10 +326,10 @@ export default class Signer {
 
 		// Task 3: Calculate the Signature
 		const signing_key = get_signing_key(
-				access_info.secret_key,
-				d_str,
-				serviceInfo
-			),
+			access_info.secret_key,
+			d_str,
+			serviceInfo
+		),
 			signature = get_signature(signing_key, str_to_sign);
 
 		// Task 4: Adding the Signing information to the Request
@@ -370,7 +370,10 @@ export default class Signer {
 		const body: any =
 			typeof urlOrRequest === 'object' ? urlOrRequest.body : undefined;
 
-		const now = new Date().toISOString().replace(/[:\-]|\.\d{3}/g, '');
+		const now = AWS['util']['date']
+			.getDate()
+			.toISOString()
+			.replace(/[:\-]|\.\d{3}/g, '');
 		const today = now.substr(0, 8);
 		// Intentionally discarding search
 		const { search, ...parsedUrl } = url.parse(urlToSign, true, true);
